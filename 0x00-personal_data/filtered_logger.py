@@ -8,6 +8,7 @@ solve - tasks:
 '''
 from typing import List
 import re
+import logging
 
 
 def filter_datum(fields: List[str], redaction: str,
@@ -31,3 +32,31 @@ def filter_datum(fields: List[str], redaction: str,
                          field + "=" + redaction + separator,
                          message)
     return message
+
+
+class RedactingFormatter(logging.Formatter):
+    """ Redacting Formatter class
+        Description: Update the class to accept a list of strings fields
+                     constructor argument.
+
+        Implement the format method to filter values in incoming log records
+        using filter_datum. Values for fields in fields should be filtered.
+
+        DO NOT extrapolate FORMAT manually. The format method should be less
+        than 5 lines long
+    """
+
+    REDACTION = "***"
+    FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
+    SEPARATOR = ";"
+
+    def __init__(self, fields: List[str]):
+        """ Constructor Method """
+        super(RedactingFormatter, self).__init__(self.FORMAT)
+        self.fields = fields
+
+    def format(self, record: logging.LogRecord) -> str:
+        """ Filters values in incoming log records using filter_datum """
+        return filter_datum(self.fields, self.REDACTION,
+                            super(RedactingFormatter, self).format(record),
+                            self.SEPARATOR)
