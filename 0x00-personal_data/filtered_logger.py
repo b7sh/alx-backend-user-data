@@ -1,37 +1,39 @@
 #!/usr/bin/env python3
-'''
-solve - tasks:
-    0. Regex-ing
-    1. Log formatter
+''' 0. Regex-ing: filter_datum
+    1. Log formatter: class RedactingFormatter
     2. Create logger
     3. Connect to secure database
+    4. Read and filter data
 '''
-from typing import List
+
 import re
+from typing import List
 import logging
-from os import getenv
 import mysql.connector
+from os import getenv
 
 
 PII_FIELDS = ('name', 'email', 'phone', 'ssn', 'password')
 
 
-def filter_datum(fields: List[str], redaction: str,
-                 message: str, separator: str) -> str:
+def filter_datum(fields: List[str], redaction: str, message: str,
+                 separator: str) -> str:
+    ''' Description: Regex-ing - Write a function called filter_datum that
+                     returns the log message obfuscated:
+
+        Arguments:
+            fields: a list of strings representing all fields to obfuscate
+            redaction: a string representing by what the field will be
+                       obfuscated
+            message: a string representing the log line
+            separator: a string representing by which character is
+                           separating all fields in the log line (message)
+        The function should use a regex to replace occurrences of certain
+        field values.
+        filter_datum should be less than 5 lines long and use re.sub to
+        perform the substitution with a single regex.
     '''
-    Arguments:
-        fields: a list of strings
-        representing all fields to obfuscate
-        redaction: a string representing by
-        what the field will be obfuscated
-        message: a string representing the log line
-        separator: a string representing by which
-        character is separating all fields in the log line (message)
-        The function should use a regex to replace
-        occurrences of certain field values.
-        filter_datum should be less than 5 lines long
-        and use re.sub to perform the substitution with a single regex.
-    '''
+
     for field in fields:
         message = re.sub(field + "=.*?" + separator,
                          field + "=" + redaction + separator,
@@ -118,3 +120,38 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
         database=getenv('PERSONAL_DATA_DB_NAME'))
 
     return connection_db
+
+
+def main():
+    '''
+        Description: Implement a main function that takes no arguments and
+                     returns nothing.
+
+        The function will obtain a database connection using get_db and
+        retrieve all rows in the users table and display each row under a
+        filtered format
+
+        Filtered fields:
+                          name
+                          email
+                          phone
+                          ssn
+                          password
+    '''
+    database = get_db()
+    cursor = database.cursor()
+    cursor.execute("SELECT * FROM users;")
+    fields = [i[0] for i in cursor.description]
+
+    log = get_logger()
+
+    for row in cursor:
+        str_row = ''.join(f'{f}={str(r)}; ' for r, f in zip(row, fields))
+        log.info(str_row.strip())
+
+    cursor.close()
+    database.close()
+
+
+if __name__ == '__main__':
+    main()
