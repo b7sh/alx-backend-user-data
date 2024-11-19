@@ -85,3 +85,16 @@ class Auth:
             return reset_token
         except NoResultFound:
             raise ValueError
+
+    def update_password(reset_token: str, password: str) -> None:
+        '''
+        update the user password
+        '''
+        try:
+            user = self._db.get_user_from_session_id(reset_token)
+            hashed = bcrypt.hashpw(password.encode('utf-8'), gensalt())
+            self._db.update_user(user.id,
+                                 hashed_password=hashed, reset_token=None)
+            return
+        except NoResultFound:
+            raise ValueError
