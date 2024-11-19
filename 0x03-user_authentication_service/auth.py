@@ -91,7 +91,7 @@ class Auth:
         update the user password
         '''
         try:
-            user = self._db.get_user_from_session_id(reset_token)
+            user = self._db.find_user_by(reset_token)
             hashed = bcrypt.hashpw(password.encode('utf-8'), gensalt())
             self._db.update_user(user.id,
                                  hashed_password=hashed, reset_token=None)
