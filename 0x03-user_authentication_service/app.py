@@ -8,8 +8,8 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 
-@app.route('/')
-def app():
+@app.route('/', methods=['GET'], strict_slashes=False)
+def index() -> str:
     ''' the root '''
     return jsonify('{"message": "Bienvenue"}')
 
