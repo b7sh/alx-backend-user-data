@@ -95,6 +95,6 @@ class Auth:
             hashed = bcrypt.hashpw(password.encode('utf-8'), gensalt())
             self._db.update_user(user.id,
                                  hashed_password=hashed, reset_token=None)
-            return
+            return hashed
         except NoResultFound:
             raise ValueError
